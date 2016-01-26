@@ -12,10 +12,10 @@ RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/
 RUN mkdir -p /usr/lib/nuget && \
     wget https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe -O /usr/lib/nuget/NuGet.exe
 
-WORKDIR /bin
+WORKDIR /node
 
-COPY package.json /bin/
+COPY package.json /node/
 RUN npm install
-COPY . /bin/
+COPY . /node/
 
 ENTRYPOINT [ "node", "index.js" ]
