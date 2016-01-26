@@ -15,7 +15,6 @@ The following is a sample configuration in your .drone.yml file:
 ```yaml
 publish:
   nuget:
-    image: athieriot/drone-nuget
     source: http://nuget.company.com
     api_key: <Your Key>
     files: 
