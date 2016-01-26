@@ -5,7 +5,7 @@ FROM alpine:3.3
 RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     apk update && \
     apk add ca-certificates && \
-    apk add 'nodejs>4.2.4' && \
+    apk add nodejs && \
     apk add mono@testing && \
     rm -rf /var/cache/apk/*
 
