@@ -1,0 +1,23 @@
+build:
+  image: node:4.2
+  commands:
+    - npm install
+
+publish:
+  docker:
+    username: $$DOCKER_USER
+    password: $$DOCKER_PASS
+    email: $$DOCKER_EMAIL
+    repo: plugin/drone-nuget
+    tag: latest
+    when:
+      branch: master
+
+plugin:
+  name: Nuget
+  desc: Publish Artifacts to a NuGet repository
+  type: publish
+  image: plugin/drone-nuget
+  labels:
+    - publish
+    - nuget
