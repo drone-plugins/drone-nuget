@@ -18,6 +18,6 @@ RUN mkdir -p /usr/lib/nuget && \
 WORKDIR /node
 ADD package.json /node/
 ADD index.js /node/
-RUN npm install
+RUN npm install --production
 
 ENTRYPOINT ["node", "index.js"]
