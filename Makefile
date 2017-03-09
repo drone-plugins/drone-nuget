@@ -1,6 +1,6 @@
 .PHONY: all install test docker
 
-IMAGE ?= plugins/drone-nuget
+IMAGE ?= quay.io/urbit/drone-nuget
 
 all: install test
 

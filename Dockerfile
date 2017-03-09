@@ -1,23 +1,21 @@
-FROM alpine:3.3
+FROM node:6.10-alpine
 
-RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing" | tee -a /etc/apk/repositories
+# Environment variables
+ENV NUGET_VERSION 4.0.0
 
-RUN apk update && \
-  apk add \
-    ca-certificates \
-    nodejs \
-    mono@testing && \
-  rm -rf \
-    /var/cache/apk/*
+# Install dependencies & clean up
+RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing" | tee -a /etc/apk/repositories \
+    && apk --no-cache --update add \
+      curl \
+      ca-certificates \
+      mono@testing
 
-RUN mkdir -p /usr/lib/nuget && \
-  wget \
-    https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe \
-    -O /usr/lib/nuget/NuGet.exe
+RUN mkdir -p /usr/lib/nuget \
+    && cert-sync /etc/ssl/certs/ca-certificates.crt \
+    && curl -#SL https://dist.nuget.org/win-x86-commandline/v$NUGET_VERSION/NuGet.exe -o /usr/lib/nuget/NuGet.exe
 
 WORKDIR /node
-ADD package.json /node/
-ADD index.js /node/
-RUN npm install --production
+
+COPY . .
 
 ENTRYPOINT ["node", "index.js"]
