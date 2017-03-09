@@ -49,7 +49,7 @@ const do_upload = function (workspace, vargs) {
       nugetPath: nugetPath
     });
 
-    var nugetVersion = shelljs.exec('mono ' + nugetPath).head({'-n': 1});
+    var nugetVersion = shelljs.exec('mono ' + nugetPath, {silent:true}).head({'-n': 1});
     console.log(nugetVersion);
 
     var resolved_files = [].concat.apply([], vargs.files.map((f) => { return shelljs.ls(workspace.path + '/' + f); }));
