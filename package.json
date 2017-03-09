@@ -1,11 +1,11 @@
 {
   "name": "drone-nuget",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Drone plugin to publish files and artifacts to NuGet repository",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/drone-plugins/drone-nuget.git"
+    "url": "https://github.com/urbitassociates/drone-nuget.git"
   },
   "keywords": [
     "drone",
@@ -14,12 +14,12 @@
   "author": "Aurélien Thieriot",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/drone-plugins/drone-nuget/issues"
+    "url": "https://github.com/urbitassociates/drone-nuget/issues"
   },
-  "homepage": "https://github.com/drone-plugins/drone-nuget#README.md",
+  "homepage": "https://github.com/urbitassociates/drone-nuget#README.md",
   "dependencies": {
     "drone-node": "^1.0.1",
-    "nuget-runner": "^0.1.7",
-    "shelljs": "^0.5.3"
+    "nuget-runner": "^0.1.10",
+    "shelljs": "^0.7.7"
   }
 }
