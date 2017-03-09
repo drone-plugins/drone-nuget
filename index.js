@@ -16,13 +16,12 @@ const do_push = function (nuget, workspace, vargs, file) {
 
    console.log('Successfully pushed ' + file);
   }).catch(function (err) {
-
-    console.log('An error happened while pushing: ' + err);
+    console.error('An error happened while pushing: ' + err);
+    process.exit(1);
   });
 }
 
 const do_pack_then_push = function (nuget, workspace, vargs, file) {
-
   console.log('Start packing ' + file);
   nuget.pack({
     spec: file,
@@ -35,7 +34,8 @@ const do_pack_then_push = function (nuget, workspace, vargs, file) {
     do_push(nuget, workspace, vargs, resolved_package_file[0]);        
 
   }).catch(function (err) {
-    console.log('An error happened while packing: ' + err);
+    console.error('An error happened while packing: ' + err);
+    process.exit(1);
   });
 }
 
@@ -58,8 +58,8 @@ const do_upload = function (workspace, vargs) {
       }
     });
   } else {
-    console.log("Parameter missing: NuGet source URL");
-    process.exit(1)
+    console.error("Parameter missing: NuGet source URL");
+    process.exit(1);
   }
 }
 
