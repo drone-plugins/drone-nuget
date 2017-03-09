@@ -1,8 +1,7 @@
 # drone-nuget
 
-[![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-nuget/status.svg)](http://beta.drone.io/drone-plugins/drone-nuget)
-[![Coverage Status](https://aircover.co/badges/drone-plugins/drone-nuget/coverage.svg)](https://aircover.co/drone-plugins/drone-nuget)
-[![](https://badge.imagelayers.io/plugins/drone-nuget:latest.svg)](https://imagelayers.io/?images=plugins/drone-nuget:latest 'Get your own badge on imagelayers.io')
+[![Build Status](http://ci.urb-it.com/api/badges/urbitassociates/drone-nuget/status.svg)](http://ci.urb-it.com/urbitassociates/drone-nuget)
+[![Docker Repository on Quay](https://quay.io/repository/urbit/drone-nuget/status "Docker Repository on Quay")](https://quay.io/repository/urbit/drone-nuget)
 
 Drone plugin to publish files and artifacts to NuGet repository. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 
@@ -67,7 +66,7 @@ make docker
 ### Example
 
 ```sh
-docker run -i plugins/drone-nuget <<EOF
+docker run -i quay.io/urbit/drone-nuget <<EOF
 {
     "repo": {
         "clone_url": "git://github.com/drone/drone",
