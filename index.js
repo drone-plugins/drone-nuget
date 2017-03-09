@@ -42,11 +42,15 @@ const do_pack_then_push = function (nuget, workspace, vargs, file) {
 const do_upload = function (workspace, vargs) {
   if (vargs.source) {
 
+    var nugetPath = '/usr/lib/nuget/NuGet.exe';
     var nuget = new Nuget({
       apiKey: vargs.api_key,
       verbosity: vargs.verbosity,
-      nugetPath: '/usr/lib/nuget/NuGet.exe'
+      nugetPath: nugetPath
     });
+
+    var nugetVersion = shelljs.exec('mono ' + nugetPath).head({'-n': 1});
+    console.log(nugetVersion);
 
     var resolved_files = [].concat.apply([], vargs.files.map((f) => { return shelljs.ls(workspace.path + '/' + f); }));
     resolved_files.forEach((file) => {
