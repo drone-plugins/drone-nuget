@@ -5,32 +5,34 @@ build:
     - make test
 
 publish:
-  coverage:
-    # Must match parts of the absolute path
-    include: drone-nuget/coverage/lcov.info
+  docker:
+    registry: quay.io
+    username: $$QUAY_USERNAME
+    password: $$QUAY_PASSWORD
+    email: $$QUAY_EMAIL
+    repo: urbit/drone-nuget
+    tag:
+    - latest
+    - $$COMMIT
     when:
       branch: master
   docker:
-    username: $$DOCKER_USER
-    password: $$DOCKER_PASS
-    email: $$DOCKER_EMAIL
-    repo: plugins/drone-nuget
-    tag: latest
+    registry: quay.io
+    username: $$QUAY_USERNAME
+    password: $$QUAY_PASSWORD
+    email: $$QUAY_EMAIL
+    repo: urbit/drone-nuget
+    tag:
+    - $$TAG
+    - $$COMMIT
     when:
-      branch: master
-  docker:
-    username: $$DOCKER_USER
-    password: $$DOCKER_PASS
-    email: $$DOCKER_EMAIL
-    repo: plugins/drone-nuget
-    tag: develop
-    when:
-      branch: develop
+      event: tag
+      branch: refs/tags/*
 
 plugin:
   name: NuGet
   desc: Publish files and artifacts to NuGet repository
   type: publish
-  image: plugins/drone-nuget
+  image: quay.io/urbit/drone-nuget
   labels:
     - nuget
