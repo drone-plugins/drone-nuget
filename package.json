@@ -20,6 +20,6 @@
   "dependencies": {
     "drone-node": "^1.0.1",
     "nuget-runner": "^0.1.7",
-    "shelljs": "^0.5.3"
+    "shelljs": "^0.8.0"
   }
 }
