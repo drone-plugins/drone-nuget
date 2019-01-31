@@ -1,4 +1,4 @@
-FROM alpine:3.3
+FROM alpine:3.9
 
 RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing" | tee -a /etc/apk/repositories
 
