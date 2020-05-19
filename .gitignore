@@ -1,0 +1,5 @@
+/release/
+/drone-nuget*
+
+coverage.out
+.drone.yml
