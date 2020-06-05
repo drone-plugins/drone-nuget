@@ -8,6 +8,9 @@ package plugin
 import (
 	"fmt"
 	"net/url"
+	"os/exec"
+
+	"github.com/drone-plugins/drone-nuget/plugin/cli"
 )
 
 // Settings for the plugin.
@@ -51,6 +54,14 @@ func (p *Plugin) Validate() error {
 
 // Execute provides the implementation of the plugin.
 func (p *Plugin) Execute() error {
-	// Implementation of the plugin.
-	return nil
+	nuget, err := cli.New()
+	if err != nil {
+		return err
+	}
+
+	var cmds []*exec.Cmd
+
+	cmds = append(cmds, nuget.VersionCmd(), nuget.ListSourcesCmd())
+
+	return cli.RunCommands(cmds, "")
 }
