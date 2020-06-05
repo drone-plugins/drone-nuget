@@ -22,6 +22,9 @@ type NuGet interface {
 
 	// AddSourceCmd creates a command that will add a NuGet package source.
 	AddSourceCmd(source, name string) *exec.Cmd
+
+	// PushPackageCmd creates a command that will push a package to a NuGet package source.
+	PushPackageCmd(path, name, key string) *exec.Cmd
 }
 
 func New() (NuGet, error) {

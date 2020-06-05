@@ -24,3 +24,7 @@ func (n *dotnet) ListSourcesCmd() *exec.Cmd {
 func (n *dotnet) AddSourceCmd(source, name string) *exec.Cmd {
 	return exec.Command("dotnet", "nuget", "add", "source", source, "--name", name)
 }
+
+func (n *dotnet) PushPackageCmd(path, name, key string) *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "push", path, "--source", name, "--api-key", key)
+}

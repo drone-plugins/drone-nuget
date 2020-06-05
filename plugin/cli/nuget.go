@@ -24,3 +24,7 @@ func (n *nuget) ListSourcesCmd() *exec.Cmd {
 func (n *nuget) AddSourceCmd(source, name string) *exec.Cmd {
 	return exec.Command("nuget", "sources", "add", "-Source", source, "-Name", name, "-NonInteractive")
 }
+
+func (n *nuget) PushPackageCmd(path, name, key string) *exec.Cmd {
+	return nil
+}

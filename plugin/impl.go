@@ -8,6 +8,7 @@ package plugin
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"os/exec"
 
 	"github.com/drone-plugins/drone-nuget/plugin/cli"
@@ -15,8 +16,10 @@ import (
 
 // Settings for the plugin.
 type Settings struct {
+	APIKey string
 	Source string
 	Name   string
+	File   string
 }
 
 const (
@@ -26,6 +29,22 @@ const (
 
 // Validate handles the settings validation of the plugin.
 func (p *Plugin) Validate() error {
+	if p.settings.APIKey == "" {
+		return fmt.Errorf("no api key provided")
+	}
+
+	// Verify specified file
+	if p.settings.File == "" {
+		return fmt.Errorf("no package specified")
+	}
+	info, err := os.Stat(p.settings.File)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("file does not exist: %w", err)
+	}
+	if info.IsDir() {
+		return fmt.Errorf("file is a directory")
+	}
+
 	// Set defaults for source and name
 	if p.settings.Source == "" {
 		p.settings.Source = nugetOrgSource
@@ -63,11 +82,12 @@ func (p *Plugin) Execute() error {
 		nuget.VersionCmd(),
 	}
 
-	if p.settings.Name != nugetOrgSource {
+	if p.settings.Name != nugetOrgName {
 		cmds = append(cmds, nuget.AddSourceCmd(p.settings.Source, p.settings.Name))
 	}
 
 	cmds = append(cmds, nuget.ListSourcesCmd())
+	cmds = append(cmds, nuget.PushPackageCmd(p.settings.File, p.settings.Name, p.settings.APIKey))
 
 	return cli.RunCommands(cmds, "")
 }

@@ -14,6 +14,18 @@ import (
 func settingsFlags(settings *plugin.Settings) []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
+			Name:        "api-key",
+			Usage:       "api key to access nuget source",
+			EnvVars:     []string{"PLUGIN_API_KEY"},
+			Destination: &settings.APIKey,
+		},
+		&cli.StringFlag{
+			Name:        "file",
+			Usage:       "nuget package to upload",
+			EnvVars:     []string{"PLUGIN_FILE"},
+			Destination: &settings.File,
+		},
+		&cli.StringFlag{
 			Name:        "source",
 			Usage:       "nuget package repository source url",
 			EnvVars:     []string{"PLUGIN_SOURCE"},
