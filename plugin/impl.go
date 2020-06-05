@@ -59,9 +59,15 @@ func (p *Plugin) Execute() error {
 		return err
 	}
 
-	var cmds []*exec.Cmd
+	cmds := []*exec.Cmd{
+		nuget.VersionCmd(),
+	}
 
-	cmds = append(cmds, nuget.VersionCmd(), nuget.ListSourcesCmd())
+	if p.settings.Name != nugetOrgSource {
+		cmds = append(cmds, nuget.AddSourceCmd(p.settings.Source, p.settings.Name))
+	}
+
+	cmds = append(cmds, nuget.ListSourcesCmd())
 
 	return cli.RunCommands(cmds, "")
 }

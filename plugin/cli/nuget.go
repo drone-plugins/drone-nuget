@@ -18,5 +18,9 @@ func (n *nuget) VersionCmd() *exec.Cmd {
 }
 
 func (n *nuget) ListSourcesCmd() *exec.Cmd {
-	return exec.Command("nuget", "sources")
+	return exec.Command("nuget", "sources", "list")
+}
+
+func (n *nuget) AddSourceCmd(source, name string) *exec.Cmd {
+	return exec.Command("nuget", "sources", "add", "-Source", source, "-Name", name, "-NonInteractive")
 }

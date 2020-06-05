@@ -20,3 +20,7 @@ func (n *dotnet) VersionCmd() *exec.Cmd {
 func (n *dotnet) ListSourcesCmd() *exec.Cmd {
 	return exec.Command("dotnet", "nuget", "list", "source")
 }
+
+func (n *dotnet) AddSourceCmd(source, name string) *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "add", "source", source, "--name", name)
+}

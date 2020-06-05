@@ -19,6 +19,9 @@ type NuGet interface {
 
 	// ListSources creates a command that will display the NuGet package sources.
 	ListSourcesCmd() *exec.Cmd
+
+	// AddSourceCmd creates a command that will add a NuGet package source.
+	AddSourceCmd(source, name string) *exec.Cmd
 }
 
 func New() (NuGet, error) {
