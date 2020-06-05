@@ -1,107 +1,47 @@
 # drone-nuget
 
-[![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-nuget/status.svg)](http://beta.drone.io/drone-plugins/drone-nuget)
-[![Coverage Status](https://aircover.co/badges/drone-plugins/drone-nuget/coverage.svg)](https://aircover.co/drone-plugins/drone-nuget)
-[![](https://badge.imagelayers.io/plugins/drone-nuget:latest.svg)](https://imagelayers.io/?images=plugins/drone-nuget:latest 'Get your own badge on imagelayers.io')
+[![Build Status](http://cloud.drone.io/api/badges/drone-plugins/drone-nuget/status.svg)](http://cloud.drone.io/drone-plugins/drone-nuget)
+[![Gitter chat](https://badges.gitter.im/drone/drone.png)](https://gitter.im/drone/drone)
+[![Join the discussion at https://discourse.drone.io](https://img.shields.io/badge/discourse-forum-orange.svg)](https://discourse.drone.io)
+[![Drone questions at https://stackoverflow.com](https://img.shields.io/badge/drone-stackoverflow-orange.svg)](https://stackoverflow.com/questions/tagged/drone.io)
+[![](https://images.microbadger.com/badges/image/plugins/nuget.svg)](https://microbadger.com/images/plugins/nuget "Get your own image badge on microbadger.com")
+[![Go Doc](https://godoc.org/github.com/drone-plugins/drone-nuget?status.svg)](http://godoc.org/github.com/drone-plugins/drone-nuget)
+[![Go Report](https://goreportcard.com/badge/github.com/drone-plugins/drone-nuget)](https://goreportcard.com/report/github.com/drone-plugins/drone-nuget)
 
-Drone plugin to publish files and artifacts to NuGet repository. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
+Drone plugin to publish files and artifacts to a NuGet repository. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 
-## Execute
+## Build
 
-Install the deps using `make`:
+Build the binary with the following command:
 
-```
-make install
-```
+```console
+export GOOS=linux
+export GOARCH=amd64
+export CGO_ENABLED=0
+export GO111MODULE=on
 
-### Example
-
-```sh
-npm start <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "source": "http://nuget.company.com",
-        "api_key": "SUPER_KEY",
-        "files": [
-            "*.nupkg"
-        ]
-    }
-}
-EOF
+go build -v -a -tags netgo -o release/linux/amd64/drone-nuget
 ```
 
 ## Docker
 
-Build the container using `make`:
+Build the Docker image with the following command:
 
+```console
+docker build \
+  --label org.label-schema.build-date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --label org.label-schema.vcs-ref=$(git rev-parse --short HEAD) \
+  --file docker/Dockerfile.linux.amd64 --tag plugins/nuget .
 ```
-make docker
-```
 
-### Example
+## Usage
 
-```sh
-docker run -i plugins/drone-nuget <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "source": "http://nuget.company.com",
-        "api_key": "SUPER_KEY",
-        "files": [
-            "*.nupkg"
-        ]
-    }
-}
-EOF
+```console
+docker run --rm \
+  -e PLUGIN_SOURCE=http://nuget.company.com \
+  -e PLUGIN_API_KEY=SUPER_KEY \
+  -e PLUGIN_FILES=*.nupkg \
+  -v $(pwd):$(pwd) \
+  -w $(pwd) \
+  plugins/nuget
 ```
