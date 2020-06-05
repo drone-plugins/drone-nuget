@@ -12,7 +12,18 @@ import (
 
 // settingsFlags has the cli.Flags for the plugin.Settings.
 func settingsFlags(settings *plugin.Settings) []cli.Flag {
-	// Replace below with all the flags required for the plugin.
-	// Use Destination within the cli.Flags to populate settings
-	return []cli.Flag{}
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:        "source",
+			Usage:       "nuget package repository source url",
+			EnvVars:     []string{"PLUGIN_SOURCE"},
+			Destination: &settings.Source,
+		},
+		&cli.StringFlag{
+			Name:        "name",
+			Usage:       "nuget package repository name",
+			EnvVars:     []string{"PLUGIN_NAME"},
+			Destination: &settings.Name,
+		},
+	}
 }

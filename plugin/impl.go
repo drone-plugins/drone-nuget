@@ -5,14 +5,47 @@
 
 package plugin
 
+import (
+	"fmt"
+	"net/url"
+)
+
 // Settings for the plugin.
 type Settings struct {
-	// Fill in the data structure with appropriate values
+	Source string
+	Name   string
 }
+
+const (
+	nugetOrgName   = "nuget.org"
+	nugetOrgSource = "https://api.nuget.org/v3/index.json"
+)
 
 // Validate handles the settings validation of the plugin.
 func (p *Plugin) Validate() error {
-	// Validation of the settings.
+	// Set defaults for source and name
+	if p.settings.Source == "" {
+		p.settings.Source = nugetOrgSource
+	}
+	if p.settings.Name == "" {
+		if p.settings.Source == nugetOrgSource {
+			p.settings.Name = nugetOrgName
+		} else {
+			p.settings.Name = "drone-nuget"
+		}
+	}
+
+	// Validate the source and name
+	if p.settings.Name == nugetOrgName && p.settings.Source != nugetOrgSource {
+		return fmt.Errorf("repository named %s must use %s as its source", nugetOrgName, nugetOrgSource)
+	}
+	if p.settings.Name != nugetOrgName && p.settings.Source == nugetOrgSource {
+		return fmt.Errorf("source %s must use %s as its repository name", nugetOrgSource, nugetOrgName)
+	}
+	if _, err := url.Parse(p.settings.Source); err != nil {
+		return fmt.Errorf("could not parse source url %s: %w", p.settings.Source, err)
+	}
+
 	return nil
 }
 
