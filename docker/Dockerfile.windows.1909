@@ -1,5 +1,5 @@
 # escape=`
-FROM plugins/base:windows-1909-amd64
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-nanoserver-1909
 
 LABEL maintainer="Drone.IO Community <drone-dev@googlegroups.com>" `
   org.label-schema.name="Drone NuGet" `
