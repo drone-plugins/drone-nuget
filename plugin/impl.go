@@ -6,21 +6,36 @@
 package plugin
 
 import (
+	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/drone-plugins/drone-nuget/plugin/cli"
+	"github.com/sirupsen/logrus"
 )
 
-// Settings for the plugin.
-type Settings struct {
-	APIKey string
-	Source string
-	Name   string
-	File   string
-}
+type (
+	// Settings for the plugin.
+	Settings struct {
+		APIKey string
+		Source string
+		Name   string
+		File   string
+
+		nupkg string
+	}
+
+	nuspecMetadata struct {
+		Name    string `xml:"id"`
+		Version string `xml:"version"`
+	}
+)
 
 const (
 	nugetOrgName   = "nuget.org"
@@ -33,17 +48,40 @@ func (p *Plugin) Validate() error {
 		return fmt.Errorf("no api key provided")
 	}
 
-	// Verify specified file
-	if p.settings.File == "" {
+	file := p.settings.File
+	if file == "" {
 		return fmt.Errorf("no package specified")
 	}
-	info, err := os.Stat(p.settings.File)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("file does not exist: %w", err)
+
+	// Convert to / separators from os specific ones and then use path
+	// Windows works fine with / but unix does not work with \
+	file = filepath.ToSlash(file)
+
+	// Clean the path
+	file = path.Clean(file)
+
+	// Determine file type
+	if strings.HasSuffix(file, ".nuspec") {
+		nuspec := file
+		logrus.WithField("file", nuspec).Info("Loading .nuspec file")
+
+		var err error
+		file, err = nupkgFromNuspec(nuspec)
+		if err != nil {
+			return fmt.Errorf("could not determine nupkg file from %s: %w", nuspec, err)
+		}
+	} else if !strings.HasSuffix(file, ".nupkg") {
+		return fmt.Errorf("file %s isn't a nuspec or a nupkg", file)
 	}
-	if info.IsDir() {
-		return fmt.Errorf("file is a directory")
+
+	if !fileExists(file) {
+		return fmt.Errorf(".nupkg file does not exist at %s", file)
 	}
+
+	logrus.WithField("file", file).Info("Publishing .nupkg file")
+
+	// Store nupkg file and convert to os specific path
+	p.settings.nupkg = filepath.FromSlash(file)
 
 	// Set defaults for source and name
 	if p.settings.Source == "" {
@@ -68,6 +106,11 @@ func (p *Plugin) Validate() error {
 		return fmt.Errorf("could not parse source url %s: %w", p.settings.Source, err)
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"name":   p.settings.Name,
+		"source": p.settings.Source,
+	}).Info("Using NuGet repository")
+
 	return nil
 }
 
@@ -87,7 +130,51 @@ func (p *Plugin) Execute() error {
 	}
 
 	cmds = append(cmds, nuget.ListSourcesCmd())
-	cmds = append(cmds, nuget.PushPackageCmd(p.settings.File, p.settings.Name, p.settings.APIKey))
+	cmds = append(cmds, nuget.PushPackageCmd(p.settings.nupkg, p.settings.Name, p.settings.APIKey))
 
 	return cli.RunCommands(cmds, "")
+}
+
+func nupkgFromNuspec(file string) (string, error) {
+	if !fileExists(file) {
+		return "", fmt.Errorf(".nuspec file not found at %s", file)
+	}
+
+	// Read the file
+	nuspec, err := os.Open(file)
+	if err != nil {
+		return "", fmt.Errorf("unable to open .nuspec file %s: %w", file, err)
+	}
+
+	bytes, err := ioutil.ReadAll(nuspec)
+	if err != nil {
+		return "", fmt.Errorf("unable to read .nuspec file %s: %w", file, err)
+	}
+
+	// Unmarshal the file
+	var doc struct {
+		XMLName  xml.Name       `xml:"package"`
+		Metadata nuspecMetadata `xml:"metadata"`
+	}
+	if err := xml.Unmarshal(bytes, &doc); err != nil {
+		return "", fmt.Errorf("unable to parse .nuspec file %s: %w", file, err)
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"name":    doc.Metadata.Name,
+		"version": doc.Metadata.Version,
+	}).Info("Found .nupsec file")
+
+	nupkgName := fmt.Sprintf("%s.%s.nupkg", doc.Metadata.Name, doc.Metadata.Version)
+
+	return path.Join(path.Dir(file), nupkgName), nil
+}
+
+func fileExists(file string) bool {
+	info, err := os.Stat(file)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return !info.IsDir()
 }
