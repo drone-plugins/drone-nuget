@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/drone-plugins/drone-nuget/plugin/cli"
 	"github.com/sirupsen/logrus"
 )
 
@@ -116,25 +115,21 @@ func (p *Plugin) Validate() error {
 
 // Execute provides the implementation of the plugin.
 func (p *Plugin) Execute() error {
-	nuget, err := cli.New()
-	if err != nil {
-		return err
-	}
-
 	cmds := []*exec.Cmd{
-		nuget.VersionCmd(),
+		versionCmd(),
 	}
 
 	if p.settings.Name != nugetOrgName {
-		cmds = append(cmds, nuget.AddSourceCmd(p.settings.Source, p.settings.Name))
+		cmds = append(cmds, addSourceCmd(p.settings.Source, p.settings.Name))
 	}
 
-	cmds = append(cmds, nuget.ListSourcesCmd())
-	cmds = append(cmds, nuget.PushPackageCmd(p.settings.nupkg, p.settings.Name, p.settings.APIKey))
+	cmds = append(cmds, listSourcesCmd())
+	cmds = append(cmds, pushPackageCmd(p.settings.nupkg, p.settings.Name, p.settings.APIKey))
 
-	return cli.RunCommands(cmds, "")
+	return runCommands(cmds, "")
 }
 
+// nupkgFromNuspec reads the nuspec file and determines the filename.
 func nupkgFromNuspec(file string) (string, error) {
 	if !fileExists(file) {
 		return "", fmt.Errorf(".nuspec file not found at %s", file)
@@ -170,6 +165,7 @@ func nupkgFromNuspec(file string) (string, error) {
 	return path.Join(path.Dir(file), nupkgName), nil
 }
 
+// fileExists determines if the file is present.
 func fileExists(file string) bool {
 	info, err := os.Stat(file)
 	if os.IsNotExist(err) {
@@ -177,4 +173,53 @@ func fileExists(file string) bool {
 	}
 
 	return !info.IsDir()
+}
+
+// versionCmd gets the nuget version.
+func versionCmd() *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "--version")
+}
+
+// listSourcesCmd lists the nuget repositories.
+func listSourcesCmd() *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "list", "source")
+}
+
+// addSourceCmd creates a new nuget repository source.
+func addSourceCmd(source, name string) *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "add", "source", source, "--name", name)
+}
+
+// pushPackageCmd pushes a package to the nuget repository.
+func pushPackageCmd(path, name, key string) *exec.Cmd {
+	return exec.Command("dotnet", "nuget", "push", path, "--source", name, "--api-key", key)
+}
+
+// trace writes each command to standard error (preceded by a ‘$ ’) before it
+// is executed. Used for debugging your build.
+func trace(cmd *exec.Cmd) {
+	fmt.Fprintf(os.Stdout, "+ %s\n", strings.Join(cmd.Args, " "))
+}
+
+// runCommands executes the list of cmds in the given directory.
+func runCommands(cmds []*exec.Cmd, dir string) error {
+	for _, cmd := range cmds {
+		err := runCommand(cmd, dir)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// runCommand executes a cmd in the given directory.
+func runCommand(cmd *exec.Cmd, dir string) error {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	trace(cmd)
+
+	return cmd.Run()
 }
