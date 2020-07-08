@@ -1,0 +1,10 @@
+# escape=`
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-nanoserver-1809
+
+LABEL maintainer="Drone.IO Community <drone-dev@googlegroups.com>" `
+  org.label-schema.name="Drone NuGet" `
+  org.label-schema.vendor="Drone.IO Community" `
+  org.label-schema.schema-version="1.0"
+
+ADD release/windows/amd64/drone-nuget.exe C:/bin/drone-nuget.exe
+ENTRYPOINT [ "C:\\bin\\drone-nuget.exe" ]
