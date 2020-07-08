@@ -29,11 +29,6 @@ type (
 
 		nupkg string
 	}
-
-	nuspecMetadata struct {
-		Name    string `xml:"id"`
-		Version string `xml:"version"`
-	}
 )
 
 const (
@@ -151,8 +146,11 @@ func nupkgFromNuspec(file string) (string, error) {
 
 	// Unmarshal the file
 	var doc struct {
-		XMLName  xml.Name       `xml:"package"`
-		Metadata nuspecMetadata `xml:"metadata"`
+		XMLName  xml.Name `xml:"package"`
+		Metadata struct {
+			Name    string `xml:"id"`
+			Version string `xml:"version"`
+		} `xml:"metadata"`
 	}
 	if err := xml.Unmarshal(bytes, &doc); err != nil {
 		return "", fmt.Errorf("unable to parse .nuspec file %s: %w", file, err)
