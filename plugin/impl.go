@@ -59,8 +59,9 @@ func (p *Plugin) Validate() error {
 	// Clean the path
 	file = path.Clean(file)
 
-	// Determine file type
-	if strings.HasSuffix(file, ".nuspec") {
+	// Find .nupkg file
+	switch path.Ext(file) {
+	case ".nuspec":
 		nuspec := file
 		logrus.WithField("file", nuspec).Info("Loading .nuspec file")
 
@@ -69,7 +70,9 @@ func (p *Plugin) Validate() error {
 		if err != nil {
 			return fmt.Errorf("could not determine nupkg file from %s: %w", nuspec, err)
 		}
-	} else if !strings.HasSuffix(file, ".nupkg") {
+	case ".nupkg":
+		// Do nothing
+	default:
 		return fmt.Errorf("file %s isn't a nuspec or a nupkg", file)
 	}
 
