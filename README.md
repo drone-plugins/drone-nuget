@@ -1,107 +1,84 @@
-# drone-nuget
+A plugin to push packages to nuget.
 
-[![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-nuget/status.svg)](http://beta.drone.io/drone-plugins/drone-nuget)
-[![Coverage Status](https://aircover.co/badges/drone-plugins/drone-nuget/coverage.svg)](https://aircover.co/drone-plugins/drone-nuget)
-[![](https://badge.imagelayers.io/plugins/drone-nuget:latest.svg)](https://imagelayers.io/?images=plugins/drone-nuget:latest 'Get your own badge on imagelayers.io')
+# Preliminary steps
 
-Drone plugin to publish files and artifacts to NuGet repository. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
+In order to make best use of this plugin please follow the steps below:
 
-## Execute
-
-Install the deps using `make`:
-
+1. Add the package metadata like so:
+```xml
+<PackageId>AppLogger</PackageId>
+<Version>1.0.0</Version>
+<Authors>your_name</Authors>
+<Company>your_company</Company>
 ```
-make install
+2. Automatically generate package on build
+   To automatically run dotnet pack when you run dotnet build, add the following line to your project file within <PropertyGroup>:
+
+```xml
+<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 ```
+# Usage
 
-### Example
+The following settings are required for this plugin
 
-```sh
-npm start <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "source": "http://nuget.company.com",
-        "api_key": "SUPER_KEY",
-        "files": [
-            "*.nupkg"
-        ]
-    }
-}
-EOF
+* PLUGIN_NUGET_APIKEY - this is used to authenticate with nuget.
+
+* PLUGIN_NUGET_URI - nuget base url
+
+* PLUGIN_PACKAGE_LOCATION (optional) - the location of the package you wish to publish. Default behaviour will push all packages.
+
+
+Below is an example `.drone.yml` that uses this plugin.
+
+```yaml
+kind: pipeline
+name: default
+type: docker
+
+steps:
+  - name: build
+    image: mcr.microsoft.com/dotnet/sdk:5.0
+    pull: if-not-exists
+    commands:
+      - dotnet build
+  - name: publish
+    image: drone/drone-nuget
+    pull: if-not-exists
+    settings:
+      log_level: debug
+      nuget_apikey:
+        from_secret: nuget_apikey
+      nuget_uri: "https://api.nuget.org/v3/index.json"
+      package_location: "SomePackageLocation"
 ```
 
-## Docker
+# Building
 
-Build the container using `make`:
+Build the plugin binary:
 
+```text
+scripts/build.sh
 ```
-make docker
+
+Build the plugin image:
+
+```text
+docker build -t plugins/drone-nuget -f docker/Dockerfile .
 ```
 
-### Example
+# Testing
 
-```sh
-docker run -i plugins/drone-nuget <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "source": "http://nuget.company.com",
-        "api_key": "SUPER_KEY",
-        "files": [
-            "*.nupkg"
-        ]
-    }
-}
-EOF
+Execute the plugin from your current working directory:
+
+```text
+docker run --rm -e PLUGIN_NUGET_APIKEY="someKey" \
+  -e PLUGIN_NUGET_URI="someUrl" \
+  -e PLUGIN_PACKAGE_LOCATION="someLocation" \
+  -e DRONE_COMMIT_SHA=8f51ad7884c5eb69c11d260a31da7a745e6b78e2 \
+  -e DRONE_COMMIT_BRANCH=master \
+  -e DRONE_BUILD_NUMBER=43 \
+  -e DRONE_BUILD_STATUS=success \
+  -w /drone/src \
+  -v $(pwd):/drone/src \
+  plugins/drone-nuget
 ```
