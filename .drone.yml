@@ -1,36 +1,24 @@
-build:
-  image: node:4.2
-  commands:
-    - make install
-    - make test
+kind: pipeline
+type: docker
+name: default
 
-publish:
-  coverage:
-    # Must match parts of the absolute path
-    include: drone-nuget/coverage/lcov.info
-    when:
-      branch: master
-  docker:
-    username: $$DOCKER_USER
-    password: $$DOCKER_PASS
-    email: $$DOCKER_EMAIL
-    repo: plugins/drone-nuget
-    tag: latest
-    when:
-      branch: master
-  docker:
-    username: $$DOCKER_USER
-    password: $$DOCKER_PASS
-    email: $$DOCKER_EMAIL
-    repo: plugins/drone-nuget
-    tag: develop
-    when:
-      branch: develop
+steps:
+  - name: build
+    image: golang
+    commands:
+      - go build
+      - go test ./...
 
-plugin:
-  name: NuGet
-  desc: Publish files and artifacts to NuGet repository
-  type: publish
-  image: plugins/drone-nuget
-  labels:
-    - nuget
+  - name: publish
+    image: plugins/docker
+    settings:
+      repo: plugins/drone-nuget
+      auto_tag: true
+      dockerfile: docker/Dockerfile
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+    when:
+      ref:
+        - refs/heads/master
