@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/drone-plugins/drone-nuget#README.md",
   "dependencies": {
-    "drone-node": "^1.0.1",
+    "drone-node": "^2.0.0",
     "nuget-runner": "^0.1.7",
     "shelljs": "^0.8.0"
   }
